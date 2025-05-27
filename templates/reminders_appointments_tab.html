@@ -1,0 +1,44 @@
+                        <!-- Upcoming Appointments Tab -->
+                        <div class="tab-pane fade" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
+                            {% if upcoming_appointments %}
+                                {% for appointment in upcoming_appointments %}
+                                    <div class="card mb-2">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h5 class="card-title">{{ appointment.pet_name }}</h5>
+                                                    <h6 class="card-subtitle mb-2 text-primary">{{ appointment.reason }}</h6>
+                                                    <p class="card-text text-muted small">
+                                                        <i class="fas fa-calendar-day me-1"></i>{{ appointment.date }} at {{ appointment.time }}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    {% if appointment.priority == 1 %}
+                                                    <span class="badge bg-danger">Emergency</span>
+                                                    {% elif appointment.priority == 2 %}
+                                                    <span class="badge bg-warning text-dark">Urgent</span>
+                                                    {% elif appointment.priority == 3 %}
+                                                    <span class="badge bg-info">Regular</span>
+                                                    {% elif appointment.priority == 4 %}
+                                                    <span class="badge bg-success">Vaccination</span>
+                                                    {% elif appointment.priority == 5 %}
+                                                    <span class="badge bg-secondary">Grooming</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% if appointment.urgent_photo %}
+                                            <div class="mt-2">
+                                                <img src="{{ url_for('static', filename=appointment.urgent_photo) }}" class="img-fluid rounded" style="max-height: 150px;" alt="Urgent Photo">
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                                <h5>No Upcoming Appointments</h5>
+                                <p class="text-muted">You don't have any appointments scheduled in the next 7 days.</p>
+                            </div>
+                            {% endif %}
+                        </div>

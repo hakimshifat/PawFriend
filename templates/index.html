@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome | PawFriend{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row align-items-center py-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">Manage Your Pet's Health With Care</h1>
+            <p class="lead mb-4">
+                Our PawFriend helps you keep track of your pet's appointments, 
+                medical records, and medication reminders in one convenient place.
+            </p>
+            <div class="d-grid gap-2 d-md-flex">
+                {% if 'username' in session %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-4 me-md-2">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-4 me-md-2">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="fas fa-user-plus me-2"></i>Register
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-6 mt-5 mt-lg-0 text-center">
+            <i class="fas fa-paw text-primary" style="font-size: 220px; opacity: 0.7;"></i>
+        </div>
+    </div>
+    
+    <!-- Features Section -->
+    <div class="row py-5">
+        <div class="col-12 text-center mb-5">
+            <h2 class="display-5 fw-bold">Features</h2>
+            <p class="lead">Discover PawFriend can do for you and your pets.</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3 text-primary">
+                        <i class="fas fa-calendar-alt fa-4x"></i>
+                    </div>
+                    <h3 class="card-title h5">Appointment Scheduling</h3>
+                    <p class="card-text">
+                        Schedule and manage your pet's veterinary appointments with priority-based organization.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3 text-danger">
+                        <i class="fas fa-ambulance fa-4x"></i>
+                    </div>
+                    <h3 class="card-title h5">Emergency Locator</h3>
+                    <p class="card-text">
+                        Quickly find the nearest emergency veterinary clinic when seconds count.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <div class="mb-3 text-warning">
+                        <i class="fas fa-bell fa-4x"></i>
+                    </div>
+                    <h3 class="card-title h5">Medication Reminders</h3>
+                    <p class="card-text">
+                        Set up reminders for your pet's medications and treatments so you never miss a dose.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- How It Works Section -->
+    <div class="row py-5">
+        <div class="col-12 text-center mb-5">
+            <h2 class="display-5 fw-bold">How It Works</h2>
+            <p class="lead">Getting started is easy.</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="d-flex">
+                <div class="flex-shrink-0">
+                    <div class="bg-primary rounded-circle d-flex justify-content-center align-items-center text-white" 
+                         style="width: 60px; height: 60px;">1</div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h3 class="h5">Create an Account</h3>
+                    <p>Register for free and set up your personal profile.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="d-flex">
+                <div class="flex-shrink-0">
+                    <div class="bg-primary rounded-circle d-flex justify-content-center align-items-center text-white" 
+                         style="width: 60px; height: 60px;">2</div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h3 class="h5">Add Your Pets</h3>
+                    <p>Input details about your furry, feathered, or scaled companions.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="d-flex">
+                <div class="flex-shrink-0">
+                    <div class="bg-primary rounded-circle d-flex justify-content-center align-items-center text-white" 
+                         style="width: 60px; height: 60px;">3</div>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h3 class="h5">Start Managing</h3>
+                    <p>Schedule appointments, set reminders, and access emergency services.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Call to Action Section -->
+    <div class="row py-5">
+        <div class="col-12">
+            <div class="p-5 bg-primary text-white rounded">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h2 class="display-6 fw-bold mb-3">Ready to get started?</h2>
+                        <p class="lead mb-0">
+                            Join thousands of pet owners who trust our system for their pet care needs.
+                        </p>
+                    </div>
+                    <div class="col-lg-4 mt-4 mt-lg-0 text-center text-lg-end">
+                        {% if 'username' in session %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg px-4">
+                            <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-4">
+                            <i class="fas fa-paw me-2"></i>Register Now
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

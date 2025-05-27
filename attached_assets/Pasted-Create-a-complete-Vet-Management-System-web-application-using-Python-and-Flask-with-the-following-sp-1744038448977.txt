@@ -1,0 +1,51 @@
+Create a complete Vet Management System web application using Python and Flask with the following specifications:
+
+[Technology Stack]
+Backend:
+- Use Flask as the lightweight web framework to handle routing, request processing, and dynamic HTML rendering using Jinja2.
+- Use Werkzeug for utilities such as secure_filename (for file uploads) and password hashing (generate_password_hash and check_password_hash).
+- Use dotenv to load environment variables (e.g., SECRET_KEY, API_KEY) from a .env file.
+- Use Python's logging module for application logging and debugging.
+- Integrate the Google Maps API to perform geocoding and fetch directions (simulate locating the nearest vet clinic).
+
+Frontend:
+- Create HTML templates using Jinja2 for dynamic content.
+- Use CSS for styling and JavaScript for interactivity (handle form submissions, dynamic updates, etc.).
+
+Data Storage:
+- Use plain text files (e.g., pet_profiles.txt, appointments.txt, reminders.txt) for simplicity to store user data, pet profiles, appointments, and reminders.
+
+[DSA Concepts Integration]
+Implement and integrate the following Data Structures and Algorithms:
+1. **Hash Table (Python dictionary):**  
+   - Store pet profiles and health records for fast, constant-time lookups.  
+   - Each pet profile should include fields like pet_id, name, breed, age, medical history, and vaccination records.
+2. **Min-Heap (Priority Queue using Python's heapq):**  
+   - Manage appointment scheduling by prioritizing appointments (e.g., lower numeric priority for more urgent or earlier appointments).  
+   - Implement functions to add an appointment and retrieve the next urgent appointment.
+3. **Graph and Dijkstra’s Algorithm:**  
+   - Represent vet clinics as nodes in a graph where edges represent distances or travel time between clinics.  
+   - Implement Dijkstra’s algorithm to compute the shortest path from the user’s location to the nearest vet clinic.
+4. **Queue (FIFO using collections.deque):**  
+   - Manage health and medication reminders so that notifications are processed in the order they are scheduled.
+
+[Application Structure]
+Organize the code into modules:
+- **app.py:** The main Flask application that sets up routes, loads configuration from .env, and starts the server.
+- **backend/pet_records.py:** Contains functions for adding and retrieving pet profiles using a dictionary (hash table).
+- **backend/appointments.py:** Implements appointment scheduling logic using a min-heap with heapq.
+- **backend/emergency_locator.py:** Implements the graph representation of vet clinics and Dijkstra’s algorithm for locating the nearest clinic.
+- **backend/reminders.py:** Implements the queue for managing health and medication reminders.
+- **templates/** directory: Contains Jinja2 HTML templates (e.g., add_pet.html, pet_profile.html, appointments.html, emergency_locator.html, reminders.html).
+- **static/css/** directory: Contains CSS files for styling.
+- **static/js/** directory: Contains JavaScript files for client-side interactivity.
+- **.env:** File to store environment variables such as SECRET_KEY and API_KEY.
+
+[Additional Requirements]
+- Include proper error handling, logging, and documentation (docstrings and inline comments).
+- Use secure methods for user authentication (hash passwords using Werkzeug).
+- For the Google Maps API, simulate or implement basic geolocation features to find the nearest vet clinic.
+- The application should be deployable using Replit’s environment and run on a development server accessible externally.
+
+Please generate the full project structure and code with clear comments for each section. The solution should demonstrate how each DSA concept (hash table, min-heap, graph with Dijkstra’s algorithm, and queue) is integrated into the corresponding project feature.
+

@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | PawFriend{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h2 class="card-title"><i class="fas fa-paw me-2"></i>Welcome, {{ username }}!</h2>
+                    <p class="card-text">Manage your pets, appointments, and reminders from your personal dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Next Appointment</h5>
+                    <a href="{{ url_for('appointment_route') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-eye me-1"></i>View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if next_appointment %}
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white p-3 rounded-circle">
+                                <i class="fas fa-calendar-day fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5>{{ next_appointment.pet_name }} - {{ next_appointment.reason }}</h5>
+                            <div class="text-muted">
+                                <i class="fas fa-clock me-1"></i>{{ next_appointment.date }} at {{ next_appointment.time }}
+                            </div>
+                            {% if next_appointment.priority == 1 %}
+                            <div class="mt-2"><span class="badge bg-danger">Emergency</span></div>
+                            {% elif next_appointment.priority == 2 %}
+                            <div class="mt-2"><span class="badge bg-warning text-dark">Urgent</span></div>
+                            {% elif next_appointment.priority == 3 %}
+                            <div class="mt-2"><span class="badge bg-info">Regular Checkup</span></div>
+                            {% elif next_appointment.priority == 4 %}
+                            <div class="mt-2"><span class="badge bg-success">Vaccination</span></div>
+                            {% elif next_appointment.priority == 5 %}
+                            <div class="mt-2"><span class="badge bg-secondary">Grooming</span></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <p>No upcoming appointments scheduled.</p>
+                        <a href="{{ url_for('appointment_route') }}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Schedule an Appointment
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Next Reminder</h5>
+                    <a href="{{ url_for('reminder_route') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-eye me-1"></i>View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if next_reminder %}
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning text-dark p-3 rounded-circle">
+                                <i class="fas fa-pills fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5>{{ next_reminder.pet_name }} - {{ next_reminder.medication }}</h5>
+                            <div class="text-muted">
+                                <i class="fas fa-calendar-day me-1"></i>{{ next_reminder.date }}
+                            </div>
+                            <p class="mt-2 mb-0">{{ next_reminder.notes }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-end">
+                        <form action="{{ url_for('mark_reminder_complete', reminder_id=next_reminder.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="fas fa-check me-1"></i>Mark Complete
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                        <p>No upcoming medication reminders.</p>
+                        <a href="{{ url_for('reminder_route') }}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Add a Reminder
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-paw me-2"></i>My Pets</h5>
+                    <a href="{{ url_for('add_pet_route') }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-plus-circle me-1"></i>Add New Pet
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if pets %}
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        {% for pet in pets %}
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ pet.name }}</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">{{ pet.species }} - {{ pet.breed }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            <i class="fas fa-birthday-cake me-1"></i>Age: {{ pet.age }} years<br>
+                                            <i class="fas fa-weight me-1"></i>Weight: {{ pet.weight }} kg
+                                        </small>
+                                    </p>
+                                    <a href="{{ url_for('pet_profile', pet_id=pet.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-info-circle me-1"></i>View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-paw fa-3x text-muted mb-3"></i>
+                        <p>You don't have any pets registered yet.</p>
+                        <a href="{{ url_for('add_pet_route') }}" class="btn btn-success">
+                            <i class="fas fa-plus-circle me-2"></i>Add Your First Pet
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Recent Appointments</h5>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                    <div class="list-group list-group-flush">
+                        {% for appointment in appointments[:3] %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ appointment.pet_name }}</h6>
+                                <small class="text-muted">{{ appointment.date }}</small>
+                            </div>
+                            <p class="mb-1">{{ appointment.reason }}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>{{ appointment.time }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <p class="text-muted mb-0">No recent appointments found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-ambulance me-2"></i>Emergency Services</h5>
+                </div>
+                <div class="card-body">
+                    <p>Find the nearest emergency vet clinic if your pet needs immediate care.</p>
+                    <div class="d-grid">
+                        <a href="{{ url_for('emergency_locator_route') }}" class="btn btn-danger">
+                            <i class="fas fa-map-marker-alt me-2"></i>Find Emergency Clinic
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

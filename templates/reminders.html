@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+
+{% block title %}Reminders | PawFriend {% endblock %}
+
+{% block extra_css %}
+<style>
+
+    .queue-item {
+        flex: 0 0 auto;
+        padding: 15px;
+        border-radius: 8px;
+        width: 200px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    .queue-item:hover {
+        transform: translateY(-5px);
+    }
+    .queue-arrow {
+        display: flex;
+        align-items: center;
+        color: var(--bs-primary);
+        font-size: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h2 class="card-title"><i class="fas fa-bell me-2"></i>Medication Reminders</h2>
+                    <p class="card-text">Set up and manage medication reminders for your pets.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Add New Reminder</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('reminder_route') }}" id="reminderForm">
+                        <div class="mb-3">
+                            <label for="pet_id" class="form-label">Select Pet</label>
+                            <select class="form-select" id="pet_id" name="pet_id" required>
+                                <option value="" selected disabled>Choose a pet</option>
+                                {% for pet in pets %}
+                                <option value="{{ pet.id }}">{{ pet.name }} ({{ pet.species }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="medication" class="form-label">Medication Name</label>
+                            <input type="text" class="form-control" id="medication" name="medication" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Instructions/Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-bell me-2"></i>Set Reminder
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+           
+        </div>
+        
+        <div class="col-md-7">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>Your Reminders</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs mb-3" id="reminderTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="upcoming-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#upcoming" type="button" role="tab" 
+                                    aria-controls="upcoming" aria-selected="true">
+                                Upcoming
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#completed" type="button" role="tab" 
+                                    aria-controls="completed" aria-selected="false">
+                                Completed
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="all-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#all" type="button" role="tab" 
+                                    aria-controls="all" aria-selected="false">
+                                All
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="appointments-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#appointments" type="button" role="tab" 
+                                    aria-controls="appointments" aria-selected="false">
+                                Appointments
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="reminderTabContent">
+                        <!-- Upcoming Reminders Tab -->
+                        <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+                            {% set upcoming_count = 0 %}
+                            {% for reminder in reminders %}
+                                {% if not reminder.completed %}
+                                    {% set upcoming_count = upcoming_count + 1 %}
+                                    <div class="card mb-2 {% if loop.index0 == 0 %}border-primary{% endif %}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h5 class="card-title">{{ reminder.pet_name }}</h5>
+                                                    <h6 class="card-subtitle mb-2 text-primary">{{ reminder.medication }}</h6>
+                                                    <p class="card-text text-muted small">
+                                                        <i class="fas fa-calendar-day me-1"></i>{{ reminder.date }}
+                                                    </p>
+                                                    {% if reminder.notes %}
+                                                    <p class="card-text">{{ reminder.notes }}</p>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <form action="{{ url_for('mark_reminder_complete', reminder_id=reminder.id) }}" method="POST">
+                                                        <button type="submit" class="btn btn-success btn-sm" title="Mark as Complete">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if upcoming_count == 0 %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                <h5>All Caught Up!</h5>
+                                <p class="text-muted">You have no upcoming medication reminders.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Completed Reminders Tab -->
+                        <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                            {% set completed_count = 0 %}
+                            {% for reminder in reminders %}
+                                {% if reminder.completed %}
+                                    {% set completed_count = completed_count + 1 %}
+                                    <div class="card mb-2 bg-light">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h5 class="card-title">{{ reminder.pet_name }}</h5>
+                                                    <h6 class="card-subtitle mb-2 text-success">{{ reminder.medication }}</h6>
+                                                    <p class="card-text text-muted small">
+                                                        <i class="fas fa-calendar-day me-1"></i>{{ reminder.date }}
+                                                    </p>
+                                                    {% if reminder.notes %}
+                                                    <p class="card-text">{{ reminder.notes }}</p>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Completed
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if completed_count == 0 %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-hourglass-start fa-3x text-muted mb-3"></i>
+                                <h5>No Completed Reminders</h5>
+                                <p class="text-muted">You haven't completed any reminders yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Upcoming Appointments Tab -->
+                        <div class="tab-pane fade" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
+                            {% if upcoming_appointments %}
+                                {% for appointment in upcoming_appointments %}
+                                    <div class="card mb-2">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h5 class="card-title">{{ appointment.pet_name }}</h5>
+                                                    <h6 class="card-subtitle mb-2 text-primary">{{ appointment.reason }}</h6>
+                                                    <p class="card-text text-muted small">
+                                                        <i class="fas fa-calendar-day me-1"></i>{{ appointment.date }} at {{ appointment.time }}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    {% if appointment.priority == 1 %}
+                                                    <span class="badge bg-danger">Emergency</span>
+                                                    {% elif appointment.priority == 2 %}
+                                                    <span class="badge bg-warning text-dark">Urgent</span>
+                                                    {% elif appointment.priority == 3 %}
+                                                    <span class="badge bg-info">Regular</span>
+                                                    {% elif appointment.priority == 4 %}
+                                                    <span class="badge bg-success">Vaccination</span>
+                                                    {% elif appointment.priority == 5 %}
+                                                    <span class="badge bg-secondary">Grooming</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% if appointment.urgent_photo %}
+                                            <div class="mt-2">
+                                                <img src="{{ url_for('static', filename=appointment.urgent_photo) }}" class="img-fluid rounded" style="max-height: 150px;" alt="Urgent Photo">
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                                <h5>No Upcoming Appointments</h5>
+                                <p class="text-muted">You don't have any appointments scheduled in the next 7 days.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <!-- All Reminders Tab -->
+                        <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
+                            {% if reminders %}
+                                {% for reminder in reminders %}
+                                    <div class="card mb-2 {% if reminder.completed %}bg-light{% endif %}">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h5 class="card-title">{{ reminder.pet_name }}</h5>
+                                                    <h6 class="card-subtitle mb-2 {% if reminder.completed %}text-success{% else %}text-primary{% endif %}">
+                                                        {{ reminder.medication }}
+                                                    </h6>
+                                                    <p class="card-text text-muted small">
+                                                        <i class="fas fa-calendar-day me-1"></i>{{ reminder.date }}
+                                                    </p>
+                                                    {% if reminder.notes %}
+                                                    <p class="card-text">{{ reminder.notes }}</p>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    {% if reminder.completed %}
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>Completed
+                                                    </span>
+                                                    {% else %}
+                                                    <form action="{{ url_for('mark_reminder_complete', reminder_id=reminder.id) }}" method="POST">
+                                                        <button type="submit" class="btn btn-success btn-sm" title="Mark as Complete">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                    </form>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                                <h5>No Reminders</h5>
+                                <p class="text-muted">You haven't created any medication reminders yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/reminders.js') }}"></script>
+{% endblock %}

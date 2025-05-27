@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ pet.name }} | Vet Management System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-paw me-2"></i>{{ pet.name }}</h4>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if pet.photo %}
+                            <div class="text-center mb-4">
+                                <img src="{{ url_for('static', filename=pet.photo) }}" class="img-fluid rounded shadow" style="max-height: 200px;" alt="{{ pet.name }}">
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-4">
+                                <h5><i class="fas fa-info-circle me-2"></i>Pet Information</h5>
+                                <table class="table">
+                                    <tr>
+                                        <th>Species</th>
+                                        <td>{{ pet.species }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Breed</th>
+                                        <td>{{ pet.breed }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Age</th>
+                                        <td>{{ pet.age }} years</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Weight</th>
+                                        <td>{{ pet.weight }} kg</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5><i class="fas fa-notes-medical me-2"></i>Medical History</h5>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p>{{ pet.medical_history if pet.medical_history else 'No medical history recorded.' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <h5><i class="fas fa-syringe me-2"></i>Vaccinations</h5>
+                                {% if pet.vaccinations and pet.vaccinations|length > 0 %}
+                                <ul class="list-group">
+                                    {% for vaccination in pet.vaccinations %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ vaccination }}
+                                        <span class="badge bg-success rounded-pill"><i class="fas fa-check"></i></span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>No vaccinations recorded.
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5><i class="fas fa-calendar-alt me-2"></i>Upcoming Appointments</h5>
+                                    <a href="{{ url_for('appointment_route') }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus me-1"></i>Schedule
+                                    </a>
+                                </div>
+                                
+                                {% if pet_appointments %}
+                                <ul class="list-group">
+                                    {% for appointment in pet_appointments %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ appointment.date }}</strong> at {{ appointment.time }}
+                                            <div class="text-muted">{{ appointment.reason }}</div>
+                                        </div>
+                                        {% if appointment.priority == 1 %}
+                                        <span class="badge bg-danger">Emergency</span>
+                                        {% elif appointment.priority == 2 %}
+                                        <span class="badge bg-warning text-dark">Urgent</span>
+                                        {% elif appointment.priority == 3 %}
+                                        <span class="badge bg-info">Regular</span>
+                                        {% elif appointment.priority == 4 %}
+                                        <span class="badge bg-success">Vaccination</span>
+                                        {% elif appointment.priority == 5 %}
+                                        <span class="badge bg-secondary">Grooming</span>
+                                        {% endif %}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p class="text-center text-muted mb-0">
+                                            <i class="fas fa-calendar-times fa-2x mb-2"></i><br>
+                                            No upcoming appointments scheduled for {{ pet.name }}.
+                                        </p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-end">
+                                <a href="#" class="btn btn-warning me-2">
+                                    <i class="fas fa-edit me-1"></i>Edit Pet
+                                </a>
+                                <a href="#" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash-alt me-1"></i>Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

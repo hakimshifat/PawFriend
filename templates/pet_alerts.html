@@ -1,0 +1,644 @@
+{% extends 'base.html' %}
+
+{% block head %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    .priority-1 { border-left: 5px solid #dc3545; }
+    .priority-2 { border-left: 5px solid #ffc107; }
+    .priority-3 { border-left: 5px solid #17a2b8; }
+    .priority-4 { border-left: 5px solid #28a745; }
+    .alert-card { margin-bottom: 1rem; }
+    .alert-responses { max-height: 200px; overflow-y: auto; }
+    .filter-section { background: #f8f9fa; padding: 1rem; margin-bottom: 1rem; border-radius: 0.25rem; }
+    .notification-badge { position: absolute; top: -5px; right: -5px; font-size: 0.8rem; }
+    .notification-list { max-height: 300px; overflow-y: auto; }
+    .statistics-card { background: #fff; border-radius: 0.25rem; padding: 1rem; margin-bottom: 1rem; }
+    .tag-cloud span { margin: 0.2rem; }
+    .user-location { font-size: 25px; }
+    .priority-marker { display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 30px; height: 30px; color: white; font-weight: bold; }
+    .priority-marker-1 { background-color: #dc3545; }
+    .priority-marker-2 { background-color: #ffc107; }
+    .priority-marker-3 { background-color: #17a2b8; }
+    .priority-marker-4 { background-color: #28a745; }
+    .custom-file-upload {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+    
+    .custom-file-upload input[type="file"] {
+      position: absolute;
+      left: -9999px;
+    }
+    
+    .upload-preview {
+      max-width: 200px;
+      max-height: 200px;
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .upload-preview.show {
+      display: block;
+    }
+    
+    .file-info {
+      font-size: 0.875rem;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+    
+    .upload-progress {
+      display: none;
+      margin-top: 10px;
+    }
+    
+    .upload-progress.show {
+      display: block;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>🐾 Pet Trouble Alerts</h2>
+      <div class="dropdown">
+        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="notificationsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          🔔 Notifications
+          {% if unread_count > 0 %}
+            <span class="badge badge-danger notification-badge">{{ unread_count }}</span>
+          {% endif %}
+        </button>
+        <div class="dropdown-menu dropdown-menu-right notification-list" aria-labelledby="notificationsDropdown">
+          {% if notifications %}
+            {% for notification in notifications %}
+              <div class="dropdown-item {% if not notification.read %}font-weight-bold{% endif %}" data-notification-id="{{ notification.id }}">
+                <small class="text-muted d-block">{{ notification.timestamp }}</small>
+                {{ notification.message }}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="dropdown-item">No notifications</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if statistics %}
+      <div class="statistics-card">
+        <h5>📊 Alert Statistics</h5>
+        <div class="row">
+          <div class="col-md-3">
+            <small class="text-muted">Status</small>
+            <div>Active: {{ statistics.active_alerts }}</div>
+            <div>Resolved: {{ statistics.resolved_alerts }}</div>
+            <div>Verified: {{ statistics.verified_alerts }}</div>
+          </div>
+          <div class="col-md-3">
+            <small class="text-muted">Categories</small>
+            {% for category, count in statistics.by_category.items() %}
+              {% if count > 0 %}
+                <div>{{ categories[category] }}: {{ count }}</div>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="col-md-3">
+            <small class="text-muted">Priority Distribution</small>
+            {% for priority, count in statistics.by_priority.items() %}
+              {% if count > 0 %}
+                <div>{{ priority_levels[priority] }}: {{ count }}</div>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="col-md-3">
+            <small class="text-muted">Engagement</small>
+            <div>Response Rate: {{ "%.1f"|format(statistics.response_rate) }}%</div>
+            <div>Verification Rate: {{ "%.1f"|format(statistics.verification_rate) }}%</div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <div class="row">
+        <div class="col-md-3">
+          <label>View:</label>
+          <div class="btn-group d-block mb-2">
+            <a href="{{ url_for('pet_alerts', view='all') }}" class="btn btn-sm btn-{{ 'primary' if current_view == 'all' else 'outline-primary' }}">All Alerts</a>
+            <a href="{{ url_for('pet_alerts', view='mine') }}" class="btn btn-sm btn-{{ 'primary' if current_view == 'mine' else 'outline-primary' }}">My Alerts</a>
+            <a href="{{ url_for('pet_alerts', view='subscribed') }}" class="btn btn-sm btn-{{ 'primary' if current_view == 'subscribed' else 'outline-primary' }}">Subscribed</a>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label>Category:</label>
+          <select class="form-control" id="categoryFilter">
+            <option value="">All Categories</option>
+            {% for key, value in categories.items() %}
+              <option value="{{ key }}" {{ 'selected' if current_category == key }}>{{ value }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label>Search & Filter:</label>
+          <div class="input-group mb-2">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search alerts..." value="{{ search_query or '' }}">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="button" onclick="searchAlerts()">🔍 Search</button>
+            </div>
+          </div>
+          <div class="input-group">
+            <input type="number" id="maxDistance" class="form-control" placeholder="Max distance (km)" value="{{ request.args.get('max_distance', '') }}">
+            <select id="minPriority" class="form-control">
+              <option value="">Any Priority</option>
+              {% for level, name in priority_levels.items() %}
+                <option value="{{ level }}" {{ 'selected' if request.args.get('min_priority')|int == level }}>
+                  {{ name }} or higher
+                </option>
+              {% endfor %}
+            </select>
+            <div class="input-group-append">
+              <button class="btn btn-info" onclick="applyFilters()">Apply Filters</button>
+              <button class="btn btn-outline-secondary" onclick="getLocation()">📍 Use My Location</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Alert Form -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#createAlertForm">
+          ➕ Create New Alert
+        </button>
+      </div>
+      <div class="collapse" id="createAlertForm">
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" id="alertForm" onsubmit="return validateForm()">
+            <input type="hidden" name="action" value="create">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Category:</label>
+                  <select class="form-control" name="category" required>
+                    {% for key, value in categories.items() %}
+                      <option value="{{ key }}">{{ value }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Pet Type:</label>
+                  <input class="form-control" name="pet_type" placeholder="e.g., Dog, Cat" required>
+                </div>
+                <div class="form-group">
+                  <label>Priority Level:</label>
+                  <select class="form-control" name="priority">
+                    {% for level, name in priority_levels.items() %}
+                      <option value="{{ level }}">{{ name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Description:</label>
+                  <textarea class="form-control" name="description" rows="3" required
+                            placeholder="Describe the situation. You can use #hashtags to make your alert more discoverable."></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Expiration (days):</label>
+                  <input type="number" class="form-control" name="expiration_days" value="30" min="1" max="90">
+                </div>
+                <div class="form-group">
+                  <label>Photo/Video:</label>
+                  <input type="file" class="form-control" name="media" id="mediaUpload" 
+                         accept="image/*,video/*">
+                  <img id="imagePreview" class="mt-2 upload-preview d-none" alt="Preview">
+                  <video id="videoPreview" class="mt-2 upload-preview d-none" controls></video>
+                  <small class="text-muted d-block mt-1">
+                    Maximum file size: 16MB. Allowed formats: PNG, JPG, GIF, MP4, WEBM, OGG
+                  </small>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Location:</label>
+              <div class="input-group">
+                <input type="number" step="any" class="form-control" id="lat" name="lat" placeholder="Latitude" required>
+                <input type="number" step="any" class="form-control" id="lon" name="lon" placeholder="Longitude" required>
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-info" onclick="getLocation()">
+                    📍 Use My Location
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" onclick="toggleLocationHelp()">
+                    ❓ Help
+                  </button>
+                </div>
+              </div>
+              <small id="locationHelp" class="form-text text-muted" style="display: none;">
+                You can set the location by:
+                <ul>
+                  <li>Clicking the "Use My Location" button to use your current location</li>
+                  <li>Clicking directly on the map below</li>
+                  <li>Manually entering latitude and longitude coordinates</li>
+                </ul>
+              </small>
+            </div>
+            <button type="submit" class="btn btn-warning" id="submitBtn">
+              🚨 Post Alert
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts List -->
+    <div class="row">
+      {% for alert in alerts %}
+        <div class="col-md-6">
+          <div class="card alert-card priority-{{ alert.priority }}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span class="badge badge-{{ 'success' if alert.status == 'ACTIVE' else 'secondary' }}">
+                {{ alert.status }}
+              </span>
+              <small>{{ alert.timestamp }}</small>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">{{ categories[alert.category] }}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">{{ alert.pet_type }}</h6>
+              <p class="card-text">{{ alert.description }}</p>
+              
+              {% if alert.media_url %}
+                {% if alert.media_url.endswith('.mp4') or alert.media_url.endswith('.webm') or alert.media_url.endswith('.ogg') %}
+                  <video src="{{ alert.media_url }}" controls class="img-fluid mb-2"></video>
+                {% else %}
+                  <img src="{{ alert.media_url }}" alt="Alert media" class="img-fluid mb-2">
+                {% endif %}
+              {% endif %}
+
+              <div class="alert-info small">
+                <p>
+                  <strong>Priority:</strong> {{ priority_levels[alert.priority] }}<br>
+                  <strong>Posted by:</strong> {{ alert.username }}<br>
+                  <strong>Verifications:</strong> {{ alert.verification_count }}<br>
+                  <strong>Expires:</strong> {{ alert.expiration_date }}
+                </p>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="btn-group">
+                {% if username != alert.username %}
+                  <form method="post" class="d-inline">
+                    <input type="hidden" name="action" value="verify">
+                    <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                    <button type="submit" class="btn btn-sm btn-success">✓ Verify</button>
+                  </form>
+                  <form method="post" class="d-inline">
+                    <input type="hidden" name="action" value="subscribe">
+                    <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                    <button type="submit" class="btn btn-sm btn-info" {{ 'disabled' if username in alert.subscribers }}>
+                      {{ '✓ Subscribed' if username in alert.subscribers else '+ Subscribe' }}
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="post" class="d-inline">
+                    <input type="hidden" name="action" value="update_status">
+                    <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                    <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
+                      <option value="ACTIVE" {{ 'selected' if alert.status == 'ACTIVE' }}>Active</option>
+                      <option value="RESOLVED" {{ 'selected' if alert.status == 'RESOLVED' }}>Resolved</option>
+                      <option value="EXPIRED" {{ 'selected' if alert.status == 'EXPIRED' }}>Expired</option>
+                    </select>
+                  </form>
+                {% endif %}
+              </div>
+
+              <!-- Responses Section -->
+              <div class="mt-3">
+                <h6>Responses ({{ alert.responses|length }})</h6>
+                <div class="alert-responses">
+                  {% for response in alert.responses %}
+                    <div class="card mb-2">
+                      <div class="card-body py-2">
+                        <p class="mb-1">{{ response.text }}</p>
+                        <small class="text-muted">
+                          By {{ response.username }} at {{ response.timestamp }}
+                          {% if response.contact_info %}
+                            <br>Contact: {{ response.contact_info }}
+                          {% endif %}
+                        </small>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+                
+                <!-- Add Response Form -->
+                <form method="post" class="mt-2">
+                  <input type="hidden" name="action" value="respond">
+                  <input type="hidden" name="alert_id" value="{{ alert.id }}">
+                  <div class="input-group">
+                    <input type="text" name="response" class="form-control form-control-sm" placeholder="Add a response...">
+                    <input type="text" name="contact_info" class="form-control form-control-sm" placeholder="Contact info (optional)">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Send</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Map display -->
+    <div id="alerts-map" style="height: 400px;" class="mt-4 mb-5"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Initialization
+    const mapConfig = {
+      center: [40.7128, -74.0060],
+      zoom: 11,
+      markers: {
+        user: null,
+        alerts: []
+      }
+    };
+
+    // Initialize map
+    const map = L.map('alerts-map').setView(mapConfig.center, mapConfig.zoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Create custom icons for different priority levels
+    const createPriorityIcon = (priority) => {
+      return L.divIcon({
+        className: `priority-marker priority-marker-${priority}`,
+        html: priority,
+        iconSize: [30, 30]
+      });
+    };
+
+    // Initialize alerts data
+    const alertsData = (function() {
+      try {
+        return JSON.parse('{{ alerts | tojson | safe }}');
+      } catch (e) {
+        console.error('Error parsing alerts data:', e);
+        return [];
+      }
+    })();
+
+    // Add alert markers to map
+    alertsData.forEach(alert => {
+      if (alert.location && alert.location.length === 2) {
+        const marker = L.marker(alert.location, {
+          icon: createPriorityIcon(alert.priority)
+        })
+          .addTo(map)
+          .bindPopup(`
+            <strong>${alert.pet_type}</strong><br>
+            ${alert.description}<br>
+            <small>
+              Category: ${alert.category}<br>
+              Priority: ${alert.priority}<br>
+              By ${alert.username} at ${alert.timestamp}
+            </small>
+          `);
+        mapConfig.markers.alerts.push(marker);
+      }
+    });
+
+    // Search and filter functions
+    function searchAlerts() {
+      const query = document.getElementById('searchInput').value;
+      window.location.href = `{{ url_for('pet_alerts') }}?q=${encodeURIComponent(query)}`;
+    }
+
+    function applyFilters() {
+      const distance = document.getElementById('maxDistance').value;
+      const priority = document.getElementById('minPriority').value;
+      
+      let url = new URL(window.location.href);
+      url.searchParams.set('max_distance', distance);
+      if (priority) url.searchParams.set('min_priority', priority);
+      
+      if (distance) {
+        getLocationAndRedirect(url);
+      } else {
+        window.location.href = url.toString();
+      }
+    }
+
+    // Category filter handler
+    document.getElementById('categoryFilter').addEventListener('change', function() {
+      const category = this.value;
+      window.location.href = `{{ url_for('pet_alerts') }}?category=${category}`;
+    });
+
+    // Location functions
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, handleGeolocationError);
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    function getLocationAndRedirect(url) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            url.searchParams.set('user_lat', position.coords.latitude);
+            url.searchParams.set('user_lon', position.coords.longitude);
+            window.location.href = url.toString();
+          },
+          handleGeolocationError
+        );
+      }
+    }
+
+    function handleGeolocationError(error) {
+      let message = "Error getting your location: ";
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          message += "Permission denied";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          message += "Position unavailable";
+          break;
+        case error.TIMEOUT:
+          message += "Request timed out";
+          break;
+        default:
+          message += "Unknown error";
+      }
+      alert(message);
+    }
+
+    function showPosition(position) {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      
+      document.getElementById('lat').value = lat.toFixed(6);
+      document.getElementById('lon').value = lon.toFixed(6);
+      
+      // Update map
+      if (mapConfig.markers.user) {
+        map.removeLayer(mapConfig.markers.user);
+      }
+      
+      mapConfig.markers.user = L.marker([lat, lon], {
+        icon: L.divIcon({
+          className: 'user-location',
+          html: '📍',
+          iconSize: [25, 25]
+        })
+      }).addTo(map);
+      
+      map.setView([lat, lon], 13);
+    }
+
+    // Notification handlers
+    document.querySelectorAll('.dropdown-item[data-notification-id]').forEach(item => {
+      item.addEventListener('click', function() {
+        const notificationId = this.dataset.notificationId;
+        fetch('{{ url_for("pet_alerts") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: `action=mark_notification_read&notification_id=${notificationId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            this.classList.remove('font-weight-bold');
+            updateUnreadCount();
+          }
+        });
+      });
+    });
+
+    function updateUnreadCount() {
+      fetch('{{ url_for("get_notifications") }}?unread_only=true')
+        .then(response => response.json())
+        .then(notifications => {
+          const badge = document.querySelector('.notification-badge');
+          if (notifications.length > 0) {
+            if (!badge) {
+              const newBadge = document.createElement('span');
+              newBadge.className = 'badge badge-danger notification-badge';
+              newBadge.textContent = notifications.length;
+              document.getElementById('notificationsDropdown').appendChild(newBadge);
+            } else {
+              badge.textContent = notifications.length;
+            }
+          } else if (badge) {
+            badge.remove();
+          }
+        });
+    }
+
+    // Map click handler
+    map.on('click', function(e) {
+      const { lat, lng } = e.latlng;
+      document.getElementById('lat').value = lat.toFixed(6);
+      document.getElementById('lon').value = lng.toFixed(6);
+      
+      if (mapConfig.markers.user) {
+        map.removeLayer(mapConfig.markers.user);
+      }
+      mapConfig.markers.user = L.marker([lat, lng]).addTo(map);
+    });
+
+    // Search input enter key handler
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        searchAlerts();
+      }
+    });
+
+    // File upload handling
+    function handleFileSelect(input) {
+      const file = input.files[0];
+      const imagePreview = document.getElementById('imagePreview');
+      const videoPreview = document.getElementById('videoPreview');
+      
+      // Reset previews
+      imagePreview.classList.add('d-none');
+      videoPreview.classList.add('d-none');
+      imagePreview.src = '';
+      videoPreview.src = '';
+      
+      if (!file) {
+        return;
+      }
+      
+      // Check file size
+      if (file.size > 16 * 1024 * 1024) {
+        alert('File is too large. Maximum size is 16MB.');
+        input.value = '';
+        return;
+      }
+      
+      // Check file type
+      const fileType = file.type.split('/')[0];
+      const extension = file.name.split('.').pop().toLowerCase();
+      const allowedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'mp4', 'webm', 'ogg'];
+      
+      if (!allowedExtensions.includes(extension)) {
+        alert('File type not allowed. Please use: PNG, JPG, GIF, MP4, WEBM, OGG');
+        input.value = '';
+        return;
+      }
+      
+      // Show preview
+      if (fileType === 'image') {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          imagePreview.src = e.target.result;
+          imagePreview.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+      } else if (fileType === 'video') {
+        const url = URL.createObjectURL(file);
+        videoPreview.src = url;
+        videoPreview.classList.remove('d-none');
+      }
+    }
+
+    function validateForm() {
+      const lat = document.getElementById('lat').value;
+      const lon = document.getElementById('lon').value;
+      const description = document.querySelector('textarea[name="description"]').value;
+      
+      if (!lat || !lon) {
+        alert('Please set a location for the alert');
+        return false;
+      }
+      
+      if (description.length < 10) {
+        alert('Please provide a more detailed description (at least 10 characters)');
+        return false;
+      }
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '⏳ Posting Alert...';
+      
+      return true;
+    }
+
+    function toggleLocationHelp() {
+      const help = document.getElementById('locationHelp');
+      help.style.display = help.style.display === 'none' ? 'block' : 'none';
+    }
+  </script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{
+  "admin": {
+    "username": "admin",
+    "password_hash": "scrypt:32768:8:1$x1mrdfwIIjU8nX40$29132d21cb5dc18dcdbe324be65b58bf23fe5dd0dfc37004d9034bc64a43da9597d930d3009061032126bfeeb1244343eb9950f3084c4bfcd146daf02c1241fa"
+  },
+  "Test01": {
+    "username": "Test01",
+    "password_hash": "scrypt:32768:8:1$NF8jvBhpBVH9tHfY$f0861603e3c614d41618f09c293db33d9e142350e15bca9dc923e94ad3d3e8160d76931422e7d722894dec624700a244bd90c8f208d5a2a0fdbc2a88483f2ae7"
+  },
+  "test": {
+    "password_hash": "scrypt:32768:8:1$UwZ6IjdDipzhPwwa$5f4309f3309cea16050adda89eda6e83d89257d4782887380ebd9f3f910e96e1adedffad3e18aa8c2cdd7f6a22150488f8dfc1d6c1445fffc333b20cc5c398a8",
+    "email": "test@t.com",
+    "created_at": "2025-05-27T20:18:43.861866"
+  }
+}

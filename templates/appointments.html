@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointments | PawFriend{% endblock %}
+
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h2 class="card-title"><i class="fas fa-calendar-alt me-2"></i>Appointments</h2>
+                    <p class="card-text">Schedule and manage your pet's appointments.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Schedule New Appointment</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('appointment_route') }}" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="pet_id" class="form-label">Select Pet</label>
+                            <select class="form-select" id="pet_id" name="pet_id" required>
+                                <option value="" selected disabled>Choose a pet</option>
+                                {% for pet in pets %}
+                                <option value="{{ pet.id }}">{{ pet.name }} ({{ pet.species }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="time" class="form-label">Time</label>
+                            <input type="time" class="form-control" id="time" name="time" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason for Visit</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="2" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="priority" class="form-label">Priority Level</label>
+                            <select class="form-select" id="priority" name="priority" required onchange="toggleUrgentPhotoUpload()">
+                                <option value="1">Emergency (Highest)</option>
+                                <option value="2">Urgent</option>
+                                <option value="3" selected>Regular Checkup</option>
+                                <option value="4">Vaccination</option>
+                                <option value="5">Grooming (Lowest)</option>
+                            </select>
+                            <div class="form-text text-muted">
+                                <small>Priority helps organize appointments by importance.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3" id="urgentPhotoSection" style="display: none;">
+                            <label for="urgent_photo" class="form-label">Upload Photo (for emergency/urgent cases)</label>
+                            <input type="file" class="form-control" id="urgent_photo" name="urgent_photo" accept="image/*">
+                            <div class="form-text text-muted">
+                                <small>For emergency or urgent cases, a photo helps the vet prepare better.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-calendar-check me-2"></i>Schedule Appointment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+     
+        </div>
+        
+        <div class="col-md-7">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-list-alt me-2"></i>Your Appointments</h5>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Pet</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Reason</th>
+                                    <th>Priority</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appt in appointments %}
+                                <tr>
+                                    <td>{{ appt.pet_name }}</td>
+                                    <td>{{ appt.date }}</td>
+                                    <td>{{ appt.time }}</td>
+                                    <td>{{ appt.reason }}</td>
+                                    <td>
+                                        {% if appt.priority == 1 %}
+                                        <span class="badge bg-danger">Emergency</span>
+                                        {% elif appt.priority == 2 %}
+                                        <span class="badge bg-warning text-dark">Urgent</span>
+                                        {% elif appt.priority == 3 %}
+                                        <span class="badge bg-info">Regular</span>
+                                        {% elif appt.priority == 4 %}
+                                        <span class="badge bg-success">Vaccination</span>
+                                        {% elif appt.priority == 5 %}
+                                        <span class="badge bg-secondary">Grooming</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info view-appointment" data-id="{{ appt.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Modal for appointment details -->
+                    <div class="modal fade" id="appointmentModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title"><i class="fas fa-calendar-day me-2"></i>Appointment Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" id="appointmentModalBody">
+                                    <!-- Content will be filled by JavaScript -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                        <h5>No Appointments Found</h5>
+                        <p class="text-muted">You haven't scheduled any appointments yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/appointments.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,133 @@
+/* Custom styles for Vet Management System */
+
+/* Common styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+/* Dashboard styles */
+.stat-card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.pet-card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.pet-card .card-img-top {
+    height: 150px;
+    object-fit: cover;
+}
+
+/* Appointment styles */
+.priority-1 {
+    background-color: var(--bs-danger);
+    color: white;
+}
+
+.priority-2 {
+    background-color: var(--bs-warning);
+    color: var(--bs-dark);
+}
+
+.priority-3 {
+    background-color: var(--bs-info);
+    color: white;
+}
+
+.priority-4 {
+    background-color: var(--bs-success);
+    color: white;
+}
+
+.priority-5 {
+    background-color: var(--bs-secondary);
+    color: white;
+}
+
+/* Reminder styles */
+.reminder-complete {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+/* Emergency locator styles */
+.emergency-card {
+    border-left: 4px solid var(--bs-danger);
+}
+
+/* Pet profile styles */
+.medical-history {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.vaccination-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Custom animations */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Custom buttons */
+.btn-rounded {
+    border-radius: 50px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* Custom icons */
+.icon-large {
+    font-size: 2rem;
+}
+
+.icon-medium {
+    font-size: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-title {
+        font-size: 1.25rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+}
