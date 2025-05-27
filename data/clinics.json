@@ -1,56 +1,41 @@
 {
   "1": {
-    "name": "Downtown Pet Hospital",
-    "location": [
-      40.7128,
-      -74.006
-    ],
-    "address": "123 Main St, New York, NY",
-    "phone": "212-555-1000",
+    "name": "AMZ Hospital, Uttar Badda",
+    "location": [23.7925, 90.4250],
+    "address": "Uttar Badda, Dhaka 1212, Bangladesh",
+    "phone": "+880-2-55012345",
     "emergency": true,
     "hours": "24/7"
   },
   "2": {
-    "name": "Uptown Animal Clinic",
-    "location": [
-      40.7831,
-      -73.9712
-    ],
-    "address": "456 Park Ave, New York, NY",
-    "phone": "212-555-2000",
+    "name": "Mirpur 12 Community Clinic",
+    "location": [23.8290, 90.3654],
+    "address": "Mirpur 12, Dhaka 1216, Bangladesh",
+    "phone": "+880-2-55056789",
     "emergency": false,
     "hours": "8AM-6PM"
   },
   "3": {
-    "name": "Brooklyn Veterinary Center",
-    "location": [
-      40.6782,
-      -73.9442
-    ],
-    "address": "789 Atlantic Ave, Brooklyn, NY",
-    "phone": "718-555-3000",
+    "name": "Banani Pet & Vet Care",
+    "location": [23.7928, 90.4057],
+    "address": "Road 11, Banani, Dhaka 1213, Bangladesh",
+    "phone": "+880-2-55077889",
     "emergency": true,
     "hours": "24/7"
   },
   "4": {
-    "name": "Queens Pet Care",
-    "location": [
-      40.7282,
-      -73.7949
-    ],
-    "address": "101 Queens Blvd, Queens, NY",
-    "phone": "718-555-4000",
+    "name": "Dhanmondi Pet Clinic",
+    "location": [23.7465, 90.3760],
+    "address": "House 12, Road 4A, Dhanmondi, Dhaka 1209, Bangladesh",
+    "phone": "+880-2-9123456",
     "emergency": false,
     "hours": "9AM-7PM"
   },
   "5": {
-    "name": "Bronx Animal Hospital",
-    "location": [
-      40.8448,
-      -73.8648
-    ],
-    "address": "202 Grand Concourse, Bronx, NY",
-    "phone": "718-555-5000",
+    "name": "Uttara Animal Hospital",
+    "location": [23.8745, 90.3984],
+    "address": "Sector 10, Uttara, Dhaka 1230, Bangladesh",
+    "phone": "+880-2-58912345",
     "emergency": true,
     "hours": "24/7"
   }

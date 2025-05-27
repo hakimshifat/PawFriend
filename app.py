@@ -7,50 +7,48 @@ from dotenv import load_dotenv
 import logging
 import re
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Import backend modules
 from backend import pet_records, appointments, reminders, emergency_locator, auth, alerts
 from backend.utils import login_required
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
 
-# Configure logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Configure upload folder
+
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'webm', 'ogg'}
 
-# Ensure upload directory exists
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Configure maximum file size (16MB)
+
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Configure upload handling
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  
 app.config['UPLOAD_EXTENSIONS'] = ALLOWED_EXTENSIONS
 app.config['UPLOAD_PATH'] = UPLOAD_FOLDER
 
-# Disable system file chooser - force use of browser native file input
+
 app.config['USE_SYSTEM_FILE_CHOOSER'] = False
 
-# Error handler for file too large
+
 @app.errorhandler(413)
 def too_large(e):
     return "File is too large. Maximum size is 16MB.", 413
 
-# Error handler for invalid file type
+
 @app.errorhandler(400)
 def bad_request(e):
     return "Invalid file type. Allowed types: PNG, JPG, GIF, MP4, WEBM, OGG", 400
 
-# Context processor for current year
+
 @app.context_processor
 def inject_current_year():
     return {"current_year": datetime.datetime.now().year}
@@ -59,16 +57,6 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def save_uploaded_file(file, subfolder=''):
-    """
-    Safely save an uploaded file and return its URL path.
-    
-    Args:
-        file: FileStorage object from request.files
-        subfolder: Optional subfolder within uploads directory
-        
-    Returns:
-        tuple: (success, url_or_error_message)
-    """
     if not file:
         return False, "No file provided"
         
@@ -81,7 +69,7 @@ def save_uploaded_file(file, subfolder=''):
     try:
         filename = secure_filename(file.filename)
         
-        # Create year/month based subfolder
+        
         date_folder = datetime.datetime.now().strftime('%Y/%m')
         if subfolder:
             upload_folder = os.path.join(UPLOAD_FOLDER, subfolder, date_folder)
@@ -90,16 +78,15 @@ def save_uploaded_file(file, subfolder=''):
             
         os.makedirs(upload_folder, exist_ok=True)
         
-        # Add timestamp to filename to avoid conflicts
+        
         timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S_')
         filename = timestamp + filename
         
         file_path = os.path.join(upload_folder, filename)
         file.save(file_path)
         
-        # Convert absolute path to URL path
         url_path = file_path.replace(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'), '')
-        url_path = url_path.replace('\\', '/')  # Fix Windows paths
+        url_path = url_path.replace('\\', '/')  
         
         return True, url_path
         
@@ -109,14 +96,13 @@ def save_uploaded_file(file, subfolder=''):
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
-    """Serve uploaded files with proper content type"""
     try:
         return send_from_directory(UPLOAD_FOLDER, filename)
     except Exception as e:
         logger.error(f"Error serving file {filename}: {str(e)}")
         return "File not found", 404
 
-# Routes
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -127,14 +113,14 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        # Load users data
+        
         users_data = auth.load_users()
         
-        # Verify credentials
+        
         verified, message = auth.verify_user(users_data, username, password)
         
         if verified:
-            # Store username in session
+            
             session['username'] = username
             flash('Login successful!', 'success')
             return redirect(url_for('dashboard'))
@@ -163,12 +149,12 @@ def register():
             flash('Passwords do not match', 'danger')
             return redirect(url_for('register'))
 
-        # Check if username or email already exists
+        
         if auth.user_exists(username) or auth.email_exists(email):
             flash('Username or email already exists', 'danger')
             return redirect(url_for('register'))
 
-        # Create new user
+        
         if auth.create_user(username, email, password):
             flash('Registration successful! Please login.', 'success')
             return redirect(url_for('login'))
@@ -189,20 +175,20 @@ def logout():
 def dashboard():
     username = session.get('username')
     
-    # Load pet records
+    
     pets_data = pet_records.load_pet_records()
     pets = pet_records.get_all_pets(pets_data, username)
     
-    # Load appointments
+    
     appointments_data = appointments.load_appointments()
     all_appointments = appointments.get_all_appointments(appointments_data, username)
     next_appointment = appointments.get_next_appointment(appointments_data, username)
     
-    # Load reminders
+    
     reminders_data = reminders.load_reminders()
     next_reminder = reminders.get_next_reminder(reminders_data, username)
     
-    # Add pet names to appointments and reminders
+    
     if next_appointment:
         for pet in pets:
             if pet['id'] == next_appointment['pet_id']:
@@ -215,7 +201,7 @@ def dashboard():
                 next_reminder['pet_name'] = pet['name']
                 break
     
-    # Add pet names to all appointments
+    
     for appointment in all_appointments:
         for pet in pets:
             if pet['id'] == appointment['pet_id']:
@@ -237,7 +223,7 @@ def add_pet_route():
     if request.method == 'POST':
         username = session.get('username')
         
-        # Collect form data
+        
         pet_data = {
             'name': request.form.get('name'),
             'species': request.form.get('species'),
@@ -248,21 +234,21 @@ def add_pet_route():
             'vaccinations': [v.strip() for v in request.form.get('vaccinations', '').split(',') if v.strip()]
         }
         
-        # Validate species - restrict to only cats and dogs
+        
         if pet_data['species'].lower() not in ['cat', 'dog']:
             flash("Only cats and dogs are allowed as pets in this system.", 'danger')
             return redirect(url_for('add_pet_route'))
         
-        # Load pet records
+        
         pets_data = pet_records.load_pet_records()
         
-        # Get photo file if uploaded
+        
         photo_file = request.files.get('pet_photo')
         
-        # Add new pet with photo
+        
         new_pet = pet_records.add_pet(pets_data, username, pet_data, photo_file)
         
-        # Save pet records
+        
         pet_records.save_pet_records(pets_data)
         
         flash(f"Pet '{new_pet['name']}' added successfully!", 'success')
@@ -275,7 +261,7 @@ def add_pet_route():
 def pet_profile(pet_id):
     username = session.get('username')
     
-    # Load pet records
+    
     pets_data = pet_records.load_pet_records()
     pet = pet_records.get_pet(pets_data, username, pet_id)
     
@@ -283,11 +269,11 @@ def pet_profile(pet_id):
         flash('Pet not found.', 'danger')
         return redirect(url_for('dashboard'))
     
-    # Load appointments for this pet
+    
     appointments_data = appointments.load_appointments()
     pet_appointments = appointments.get_appointments_for_pet(appointments_data, username, pet_id)
     
-    # Load reminders for this pet
+    
     reminders_data = reminders.load_reminders()
     pet_reminders = reminders.get_reminders_for_pet(reminders_data, username, pet_id)
     
@@ -304,7 +290,7 @@ def appointment_route():
     username = session.get('username')
     
     if request.method == 'POST':
-        # Collect form data
+        
         appointment_data = {
             'pet_id': request.form.get('pet_id'),
             'date': request.form.get('date'),
@@ -313,32 +299,32 @@ def appointment_route():
             'priority': int(request.form.get('priority'))
         }
         
-        # Load appointments
+        
         appointments_data = appointments.load_appointments()
         
-        # Check for urgent photo upload
+        
         urgent_photo = None
-        if int(appointment_data['priority']) <= 2:  # Emergency or Urgent
+        if int(appointment_data['priority']) <= 2:  
             urgent_photo = request.files.get('urgent_photo')
         
-        # Add new appointment with photo if urgent/emergency
+        
         new_appointment = appointments.add_appointment(appointments_data, username, appointment_data, urgent_photo)
         
-        # Save appointments
+        
         appointments.save_appointments(appointments_data)
         
         flash('Appointment scheduled successfully!', 'success')
         return redirect(url_for('appointment_route'))
     
-    # Load pet records for the select dropdown
+    
     pets_data = pet_records.load_pet_records()
     pets = pet_records.get_all_pets(pets_data, username)
     
-    # Load appointments
+    
     appointments_data = appointments.load_appointments()
     all_appointments = appointments.get_all_appointments(appointments_data, username)
     
-    # Add pet names to appointments
+    
     for appointment in all_appointments:
         for pet in pets:
             if pet['id'] == appointment['pet_id']:
@@ -354,14 +340,14 @@ def appointment_route():
 @app.route('/emergency')
 @login_required
 def emergency_locator_route():
-    # Default user location (NYC coordinates)
+    
     user_lat = 40.7128
     user_lng = -74.0060
     
-    # Create clinic graph
+    
     clinic_graph = emergency_locator.create_clinic_graph()
     
-    # Find nearest emergency clinic
+    
     user_location = (user_lat, user_lng)
     nearest_clinic = emergency_locator.find_nearest_clinic(clinic_graph, user_location)
     
@@ -379,7 +365,7 @@ def reminder_route():
     username = session.get('username')
     
     if request.method == 'POST':
-        # Collect form data
+        
         reminder_data = {
             'pet_id': request.form.get('pet_id'),
             'date': request.form.get('date'),
@@ -388,37 +374,37 @@ def reminder_route():
             'completed': False
         }
         
-        # Load reminders
+        
         reminders_data = reminders.load_reminders()
         
-        # Add new reminder
+        
         new_reminder = reminders.add_reminder(reminders_data, username, reminder_data)
         
-        # Save reminders
+        
         reminders.save_reminders(reminders_data)
         
         flash('Reminder set successfully!', 'success')
         return redirect(url_for('reminder_route'))
     
-    # Load pet records for the select dropdown
+    
     pets_data = pet_records.load_pet_records()
     pets = pet_records.get_all_pets(pets_data, username)
     
-    # Load reminders
+    
     reminders_data = reminders.load_reminders()
     all_reminders = reminders.get_all_reminders(reminders_data, username)
     
-    # Get upcoming reminders for the next 7 days
+    
     upcoming_reminders = reminders.get_upcoming_reminders(reminders_data, username, days=7)
     
-    # Load appointments for upcoming appointments section
+    
     appointments_data = appointments.load_appointments()
     upcoming_appointments = []
     
-    # Get all appointments
+    
     all_appointments = appointments.get_all_appointments(appointments_data, username)
     
-    # Filter for upcoming appointments in the next 7 days
+    
     from datetime import datetime, timedelta
     today = datetime.now().date()
     seven_days_later = today + timedelta(days=7)
@@ -428,7 +414,7 @@ def reminder_route():
         if today <= appointment_date <= seven_days_later:
             upcoming_appointments.append(appointment)
     
-    # Add pet names to reminders and appointments
+    
     for reminder in all_reminders:
         for pet in pets:
             if pet['id'] == reminder['pet_id']:
@@ -460,20 +446,20 @@ def reminder_route():
 def mark_reminder_complete(reminder_id):
     username = session.get('username')
     
-    # Load reminders
+    
     reminders_data = reminders.load_reminders()
     
-    # Mark reminder as complete
+    
     success = reminders.mark_reminder_complete(reminders_data, username, reminder_id)
     
     if success:
-        # Save reminders
+        
         reminders.save_reminders(reminders_data)
         flash('Reminder marked as complete!', 'success')
     else:
         flash('Reminder not found.', 'danger')
     
-    # Check if request came from dashboard or reminders page
+    
     referrer = request.referrer
     if referrer and 'dashboard' in referrer:
         return redirect(url_for('dashboard'))
@@ -563,9 +549,9 @@ def pet_alerts():
             return jsonify({'success': True})
         return redirect(url_for('pet_alerts'))
     
-    # Get filter parameters
+    
     category = request.args.get('category')
-    view = request.args.get('view', 'all')  # all, mine, subscribed
+    view = request.args.get('view', 'all')  
     max_distance = request.args.get('max_distance')
     user_lat = request.args.get('user_lat')
     user_lon = request.args.get('user_lon')
@@ -573,16 +559,16 @@ def pet_alerts():
     min_priority = request.args.get('min_priority', type=int)
     tags = request.args.getlist('tags')
     
-    # Get notifications
+    
     notifications = alerts.get_user_notifications(username)
     unread_notifications = alerts.get_user_notifications(username, unread_only=True)
     
-    # Get statistics if viewing all alerts
+    
     statistics = None
     if view == 'all' and not category and not search_query:
         statistics = alerts.get_alert_statistics()
     
-    # Get alerts based on filters
+    
     if search_query:
         all_alerts = alerts.search_alerts(search_query)
     elif category:
@@ -628,7 +614,7 @@ def get_notifications():
     notifications = alerts.get_user_notifications(username, unread_only=unread_only)
     return jsonify(notifications)
 
-# Error handlers
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
