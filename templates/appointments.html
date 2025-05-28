@@ -33,22 +33,37 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
+                        <div class="mb-3">
+                            <label for="vet_id" class="form-label">Choose Vet</label>
+                            <select class="form-select" id="vet_id" name="vet_id" required>
+                                <option value="" selected disabled>Select a vet</option>
+                                {% for vet in vets %}
+                                <option value="{{ vet.id }}">{{ vet.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <div class="mb-3">
                             <label for="date" class="form-label">Date</label>
                             <input type="date" class="form-control" id="date" name="date" required>
                         </div>
-                        
+
                         <div class="mb-3">
-                            <label for="time" class="form-label">Time</label>
-                            <input type="time" class="form-control" id="time" name="time" required>
+                            <label for="slot" class="form-label">Choose Time Slot</label>
+                            <select class="form-select" id="slot" name="slot" required>
+                                <option value="" selected disabled>Select a time slot</option>
+                                {% for slot in slots %}
+                                <option value="{{ slot }}">{{ slot }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="reason" class="form-label">Reason for Visit</label>
                             <textarea class="form-control" id="reason" name="reason" rows="2" required></textarea>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label for="priority" class="form-label">Priority Level</label>
                             <select class="form-select" id="priority" name="priority" required onchange="toggleUrgentPhotoUpload()">
@@ -62,7 +77,7 @@
                                 <small>Priority helps organize appointments by importance.</small>
                             </div>
                         </div>
-                        
+
                         <div class="mb-3" id="urgentPhotoSection" style="display: none;">
                             <label for="urgent_photo" class="form-label">Upload Photo (for emergency/urgent cases)</label>
                             <input type="file" class="form-control" id="urgent_photo" name="urgent_photo" accept="image/*">
@@ -70,7 +85,7 @@
                                 <small>For emergency or urgent cases, a photo helps the vet prepare better.</small>
                             </div>
                         </div>
-                        
+
                         <div class="d-grid">
                             <button type="submit" class="btn btn-success">
                                 <i class="fas fa-calendar-check me-2"></i>Schedule Appointment

@@ -16,5 +16,16 @@
       "priority": 4,
       "id": "2afb069c-30aa-4346-84ad-f366de722b5f"
     }
+  ],
+  "Tashfin": [
+    {
+      "pet_id": "66d0f515-a8a0-4aba-900c-2e4137e791d2",
+      "vet_id": "vet2",
+      "date": "2025-05-28",
+      "slot": "11:00-12:00",
+      "reason": "Normal",
+      "priority": 3,
+      "id": "d372e2ea-b279-4cec-80a9-3b2f0b2b203d"
+    }
   ]
 }

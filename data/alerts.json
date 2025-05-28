@@ -1,1 +1,36 @@
-[]
+[
+  {
+    "id": 1,
+    "username": "Tashfin",
+    "pet_type": "Cat",
+    "description": "I Lost the cat near BUP",
+    "location": [
+      0.0,
+      0.0
+    ],
+    "category": "LOST_PET",
+    "priority": 1,
+    "status": "ACTIVE",
+    "media_url": "/static/uploads/alerts/2025/05/20250528_080549_th-404648328.jpg",
+    "created_at": "2025-05-28T08:05:49.005016",
+    "expires_at": "2025-06-27T08:05:49.004961",
+    "responses": [
+      {
+        "username": "Tasdik",
+        "text": "I saw the cat, near third place. some bba guys were petting him",
+        "timestamp": "2025-05-28 08:07",
+        "contact_info": ""
+      }
+    ],
+    "subscribers": [
+      "Tashfin"
+    ],
+    "verification_count": 1,
+    "tags": [
+      "lost"
+    ],
+    "verifiers": [
+      "Tasdik"
+    ]
+  }
+]

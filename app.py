@@ -1,4 +1,5 @@
 import os
+import json
 import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -228,7 +229,7 @@ def add_pet_route():
             'name': request.form.get('name'),
             'species': request.form.get('species'),
             'breed': request.form.get('breed'),
-            'age': int(request.form.get('age')),
+            'age': float(request.form.get('age')),  # <-- changed from int() to float()
             'weight': float(request.form.get('weight')),
             'medical_history': request.form.get('medical_history', ''),
             'vaccinations': [v.strip() for v in request.form.get('vaccinations', '').split(',') if v.strip()]
@@ -288,53 +289,48 @@ def pet_profile(pet_id):
 @login_required
 def appointment_route():
     username = session.get('username')
-    
+
+    vets = load_json_data('vets.json')
+    slots = load_json_data('slots.json')
+
     if request.method == 'POST':
-        
         appointment_data = {
             'pet_id': request.form.get('pet_id'),
+            'vet_id': request.form.get('vet_id'),
             'date': request.form.get('date'),
-            'time': request.form.get('time'),
+            'slot': request.form.get('slot'),
             'reason': request.form.get('reason'),
             'priority': int(request.form.get('priority'))
         }
-        
-        
+
         appointments_data = appointments.load_appointments()
-        
-        
         urgent_photo = None
-        if int(appointment_data['priority']) <= 2:  
+        if int(appointment_data['priority']) <= 2:
             urgent_photo = request.files.get('urgent_photo')
-        
-        
+
         new_appointment = appointments.add_appointment(appointments_data, username, appointment_data, urgent_photo)
-        
-        
         appointments.save_appointments(appointments_data)
-        
+
         flash('Appointment scheduled successfully!', 'success')
         return redirect(url_for('appointment_route'))
-    
-    
+
     pets_data = pet_records.load_pet_records()
     pets = pet_records.get_all_pets(pets_data, username)
-    
-    
     appointments_data = appointments.load_appointments()
     all_appointments = appointments.get_all_appointments(appointments_data, username)
-    
-    
+
     for appointment in all_appointments:
         for pet in pets:
             if pet['id'] == appointment['pet_id']:
                 appointment['pet_name'] = pet['name']
                 break
-    
+
     return render_template(
         'appointments.html',
         pets=pets,
-        appointments=all_appointments
+        appointments=all_appointments,
+        vets=vets,
+        slots=slots
     )
 
 @app.route('/emergency')
@@ -622,3 +618,8 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_server_error(e):
     return render_template('500.html'), 500
+
+def load_json_data(filename):
+    data_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', filename)
+    with open(data_path, 'r') as f:
+        return json.load(f)

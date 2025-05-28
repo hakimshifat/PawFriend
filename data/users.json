@@ -3,5 +3,15 @@
     "password_hash": "scrypt:32768:8:1$4HPW0v42yu1JxguQ$9f77fc0c5c1a1b3de959c4823b010f90e0bdd920d1e3b69fedab49c228d4ed20bc2f5031ac85a6364c7d5658447546dcebcc8e94b482d6977c0125ac1ebfc068",
     "email": "admin@site.com",
     "created_at": "2025-05-27T23:26:48.928839"
+  },
+  "Tashfin": {
+    "password_hash": "scrypt:32768:8:1$cK5fPed0PsCyIVJM$b4dddbbc99dd08bb33631403c6387d358e2ee09883108b6129dfb91532fefe557a56d6b132f6032a16d6df312376fb2d704619229a55384634816295c1d8ca1e",
+    "email": "tashfin1@gmail.com",
+    "created_at": "2025-05-28T07:51:20.699948"
+  },
+  "Tasdik": {
+    "password_hash": "scrypt:32768:8:1$FHyVWijn84A1E78d$f08f3a714228a0c76ab11a2988954b5d8f6c880845a98dad684724421c73d442db78979f026c1adf4ba676fbfa0d24f6cb6529fef68e929906b77a300d0d4966",
+    "email": "tasdik@gmail.com",
+    "created_at": "2025-05-28T08:07:13.173737"
   }
 }
