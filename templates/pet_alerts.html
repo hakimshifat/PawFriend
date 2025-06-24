@@ -226,26 +226,12 @@
             </div>
             <div class="form-group">
               <label>Location:</label>
-              <div class="input-group">
-                <input type="number" step="any" class="form-control" id="lat" name="lat" placeholder="Latitude" required>
-                <input type="number" step="any" class="form-control" id="lon" name="lon" placeholder="Longitude" required>
-                <div class="input-group-append">
-                  <button type="button" class="btn btn-info" onclick="getLocation()">
-                    📍 Use My Location
-                  </button>
-                  <button type="button" class="btn btn-outline-secondary" onclick="toggleLocationHelp()">
-                    ❓ Help
-                  </button>
-                </div>
-              </div>
-              <small id="locationHelp" class="form-text text-muted" style="display: none;">
-                You can set the location by:
-                <ul>
-                  <li>Clicking the "Use My Location" button to use your current location</li>
-                  <li>Clicking directly on the map below</li>
-                  <li>Manually entering latitude and longitude coordinates</li>
-                </ul>
-              </small>
+              <select class="form-control" name="location_node" required>
+                <option value="">Select a location</option>
+                {% for node in graph_nodes %}
+                  <option value="{{ node.id }}">{{ node.name }}</option>
+                {% endfor %}
+              </select>
             </div>
             <button type="submit" class="btn btn-warning" id="submitBtn">
               🚨 Post Alert

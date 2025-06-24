@@ -2,26 +2,6 @@
 
 {% block title %}Emergency Locator | PawFriend{% endblock %}
 
-{% block extra_css %}
-<style>
-    #map {
-        height: 500px;
-        width: 100%;
-        border-radius: 0.25rem;
-        margin-bottom: 20px;
-    }
-    .emergency-info {
-        border-left: 4px solid var(--bs-danger);
-    }
-    .clinic-card {
-        transition: transform 0.3s ease;
-    }
-    .clinic-card:hover {
-        transform: translateY(-5px);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container py-4">
     <div class="row mb-4">
@@ -34,7 +14,6 @@
             </div>
         </div>
     </div>
-    
     <div class="row">
         <div class="col-md-8">
             <div class="card shadow mb-4">
@@ -51,37 +30,69 @@
                                 <h5 class="alert-heading">In Case of Emergency</h5>
                                 <p class="mb-0">
                                     If your pet is experiencing a life-threatening emergency, please call ahead to 
-                                    the clinic while you're on your way. This allows the staff to prepare for your arrival.
+                                    the clinic while you're on your way.
                                 </p>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="location-search" class="form-label">Your Location</label>
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" id="location-search" 
-                                   placeholder="Enter your address or use current location">
-                            <button class="btn btn-primary" type="button" id="use-current-location">
-                                <i class="fas fa-location-arrow me-1"></i>Current Location
-                            </button>
+                    <form method="POST" class="mb-4">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-5">
+                                <label for="from_location" class="form-label">From Location</label>
+                                <select class="form-select" id="from_location" name="from_location" required>
+                                    <option value="" disabled selected>Select starting location</option>
+                                    {% for clinic in clinics %}
+                                        {% if clinic.type == 'place' %}
+                                            <option value="{{ clinic.id }}" {% if from_id == clinic.id %}selected{% endif %}>{{ clinic.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label for="to_location" class="form-label">To Clinic (optional)</label>
+                                <select class="form-select" id="to_location" name="to_location">
+                                    <option value="" selected>Find nearest emergency clinic</option>
+                                    {% for clinic in clinics %}
+                                        {% if clinic.type == 'clinic' %}
+                                            <option value="{{ clinic.id }}" {% if to_id == clinic.id %}selected{% endif %}>{{ clinic.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-search-location me-1"></i>Find Path
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    {% if nearest_clinic %}
+                    <div class="alert alert-success mt-3" style="opacity:1; transition:none;">
+                        <h5>Nearest Emergency Clinic</h5>
+                        <strong>{{ nearest_clinic.name }}</strong><br>
+                        <span>{{ nearest_clinic.address }}</span><br>
+                        <span>Phone: {{ nearest_clinic.phone }}</span><br>
+                        <span>Distance: {{ nearest_clinic.distance|default('N/A') }}</span>
+                    </div>
+                    {% endif %}
+                    {% if path_names %}
+                    <div class="alert alert-info mt-3" style="opacity:1; transition:none;">
+                        <h5>Shortest Path</h5>
+                        <div class="d-flex align-items-center flex-wrap">
+                        {% for name in path_names %}
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary me-2 mb-2" style="font-size:1.1em;">{{ name }}</span>
+                                {% if not loop.last %}
+                                    <i class="fas fa-arrow-right text-secondary me-2 mb-2"></i>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
                         </div>
                     </div>
-                    
-                    <div id="map"></div>
-                    
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-danger" id="find-nearest">
-                            <i class="fas fa-search-location me-2"></i>Find Nearest Emergency Clinic
-                        </button>
-                        <button class="btn btn-outline-primary" id="show-all-clinics">
-                            <i class="fas fa-clinic-medical me-2"></i>Show All Clinics
-                        </button>
-                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        
         <div class="col-md-4">
             <div class="card shadow mb-4">
                 <div class="card-header bg-danger text-white">
@@ -93,20 +104,9 @@
                         <h5>{{ nearest_clinic.name }}</h5>
                         <div class="mb-3">
                             <div class="badge bg-danger mb-2">24/7 Emergency Care</div>
-                            <p class="text-muted">
-                                <i class="fas fa-map-marker-alt me-2"></i>
-                                {{ nearest_clinic.location[0] }}, {{ nearest_clinic.location[1] }}
-                            </p>
-                            <p class="mb-0">
-                                <i class="fas fa-route me-2"></i>
-                                <span class="text-primary">{{ nearest_clinic.distance }} km</span> from your location
-                            </p>
                         </div>
                         <div class="d-grid gap-2">
-                            <button class="btn btn-primary" id="get-directions">
-                                <i class="fas fa-directions me-2"></i>Get Directions
-                            </button>
-                            <a href="tel:+15551234567" class="btn btn-outline-danger">
+                            <a href="tel:{{ nearest_clinic.phone }}" class="btn btn-outline-danger">
                                 <i class="fas fa-phone-alt me-2"></i>Call Clinic
                             </a>
                         </div>
@@ -115,13 +115,12 @@
                     <div class="text-center py-4">
                         <i class="fas fa-search-location fa-3x text-muted mb-3"></i>
                         <h5>No Clinic Selected</h5>
-                        <p class="text-muted">Use the map to find the nearest emergency clinic.</p>
+                        <p class="text-muted">Select a starting location.</p>
                     </div>
                     {% endif %}
                 </div>
             </div>
-            
-            <div class="card shadow">
+            <div class="card shadow mt-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>About This Tool</h5>
                 </div>
@@ -131,91 +130,34 @@
                         the nearest veterinary clinic.
                     </p>
                     <p class="mb-0">
-                        The system calculates distances using the Haversine formula, which accounts for the 
-                        Earth's curvature to provide accurate distance measurements.
+                        The system calculates the shortest path based on your custom weights between locations.
                     </p>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-clinic-medical me-2"></i>All Emergency Clinics</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row row-cols-1 row-cols-md-3 g-4" id="all-clinics-container">
-                        <!-- Will be populated with JavaScript -->
-                        <div class="col">
-                            <div class="card h-100 clinic-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Downtown Pet Hospital</h5>
-                                    <p class="card-text text-success"><i class="fas fa-clock me-1"></i>Open 24/7</p>
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-sm btn-outline-primary view-on-map" data-id="1">
-                                            <i class="fas fa-map-marker-alt me-1"></i>View on Map
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 clinic-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Brooklyn Veterinary Center</h5>
-                                    <p class="card-text text-success"><i class="fas fa-clock me-1"></i>Open 24/7</p>
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-sm btn-outline-primary view-on-map" data-id="3">
-                                            <i class="fas fa-map-marker-alt me-1"></i>View on Map
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card h-100 clinic-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Bronx Animal Hospital</h5>
-                                    <p class="card-text text-success"><i class="fas fa-clock me-1"></i>Open 24/7</p>
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-sm btn-outline-primary view-on-map" data-id="5">
-                                            <i class="fas fa-map-marker-alt me-1"></i>View on Map
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Graph Structure Visualization</h5>
+    </div>
+    <div class="card-body">
+        <div id="graph-network" style="height: 400px; width: 100%; background: #222; border-radius: 8px;"></div>
+        <small class="text-muted">Red nodes are clinics. Edge labels are weights.</small>
     </div>
 </div>
-{% endblock %}
 
 {% block extra_js %}
-<!-- Google Maps API Script -->
-<script async defer
-    src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap">
-</script>
+<!-- vis-network for graph visualization -->
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script src="{{ url_for('static', filename='js/graph_viz.js') }}"></script>
 <script>
-    // Store initial data from server
-    const USER_LAT = {{ user_lat }};
-    const USER_LNG = {{ user_lng }};
-    {% if nearest_clinic %}
-    const NEAREST_CLINIC = {
-        id: "{{ nearest_clinic.id }}",
-        name: "{{ nearest_clinic.name }}",
-        lat: {{ nearest_clinic.location[0] }},
-        lng: {{ nearest_clinic.location[1] }},
-        isEmergency: {{ 'true' if nearest_clinic.emergency else 'false' }},
-        distance: {{ nearest_clinic.distance }}
-    };
-    {% else %}
-    const NEAREST_CLINIC = null;
-    {% endif %}
+window.graphData = {
+    nodes: {{ clinics|tojson }},
+    edges: {{ edges_json|safe }}
+};
+console.log('window.graphData:', window.graphData);
 </script>
-<script src="{{ url_for('static', filename='js/emergency_locator.js') }}"></script>
+{% endblock %}
 {% endblock %}

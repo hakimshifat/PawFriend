@@ -12,6 +12,7 @@ load_dotenv()
 
 from backend import pet_records, appointments, reminders, emergency_locator, auth, alerts
 from backend.utils import login_required
+from backend.graph_nodes import get_graph_nodes
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
@@ -333,26 +334,66 @@ def appointment_route():
         slots=slots
     )
 
-@app.route('/emergency')
+@app.route('/emergency', methods=['GET', 'POST'])
 @login_required
 def emergency_locator_route():
-    
-    user_lat = 40.7128
-    user_lng = -74.0060
-    
-    
-    clinic_graph = emergency_locator.create_clinic_graph()
-    
-    
-    user_location = (user_lat, user_lng)
-    nearest_clinic = emergency_locator.find_nearest_clinic(clinic_graph, user_location)
-    
+    clinic_graph, clinics = emergency_locator.create_clinic_graph()
+    clinics_list = [
+        {
+            'id': str(cid),
+            'name': cdata['name'],
+            'type': cdata.get('type', 'clinic'),
+            'color': '#e74c3c' if cdata.get('type', 'clinic') == 'clinic' else None,
+            'label': cdata['name']  # Add label for vis-network
+        }
+        for cid, cdata in clinics.items()
+    ]
+    from_id = None
+    to_id = None
+    nearest_clinic = None
+    path_names = None
+    if request.method == 'POST':
+        from_id = request.form.get('from_location')
+        to_id = request.form.get('to_location')
+        if from_id and from_id in clinics:
+            if to_id and to_id in clinics:
+                # User selected a specific destination clinic
+                nearest_clinic = clinics[to_id]
+                nearest_id = to_id
+            else:
+                # Find nearest emergency clinic
+                nearest_clinic, nearest_id = emergency_locator.find_nearest_clinic(clinic_graph, from_id)
+            if nearest_clinic and nearest_id:
+                _, path = clinic_graph.dijkstra_shortest_path(str(from_id), nearest_id)
+                path_names = [clinics[pid]['name'] for pid in path if 'name' in clinics[pid]]
+    # Build edges as a JSON array for the template
+    edges = []
+    shortest_path_edges = set()
+    if path_names and request.method == 'POST' and from_id and nearest_clinic and nearest_id:
+        _, path = clinic_graph.dijkstra_shortest_path(str(from_id), nearest_id)
+        for i in range(len(path) - 1):
+            a, b = str(path[i]), str(path[i+1])
+            shortest_path_edges.add((min(a, b), max(a, b)))
+    for from_id, clinic in clinics.items():
+        for to_id, weight in clinic_graph.get_edges(from_id).items():
+            a, b = str(from_id), str(to_id)
+            edge = {"from": a, "to": b, "label": str(weight)}
+            if (min(a, b), max(a, b)) in shortest_path_edges:
+                edge["color"] = "#2ecc40"  # green for shortest path
+                edge["width"] = 4
+            if a < b:
+                edges.append(edge)
+    import json as _json
+    edges_json = _json.dumps(edges)
     return render_template(
         'emergency_locator.html',
-        user_lat=user_lat,
-        user_lng=user_lng,
+        clinics=clinics_list,  # for dropdowns and node list
+        clinics_dict=clinics,  # for graph edges
+        from_id=from_id,
+        to_id=to_id,
         nearest_clinic=nearest_clinic,
-        google_maps_api_key=os.environ.get('GOOGLE_MAPS_API_KEY', '')
+        path_names=path_names,
+        edges_json=edges_json
     )
 
 @app.route('/reminders', methods=['GET', 'POST'])
@@ -466,6 +507,7 @@ def mark_reminder_complete(reminder_id):
 @login_required
 def pet_alerts():
     username = session.get('username')
+    graph_nodes = get_graph_nodes()  # <-- Add this line
     
     if request.method == 'POST':
         action = request.form.get('action', 'create')
@@ -474,12 +516,10 @@ def pet_alerts():
             try:
                 pet_type = request.form.get('pet_type')
                 description = request.form.get('description')
-                lat = request.form.get('lat')
-                lon = request.form.get('lon')
+                location_node = request.form.get('location_node')
                 category = request.form.get('category')
                 priority = int(request.form.get('priority', 3))
                 expiration_days = int(request.form.get('expiration_days', 30))
-                
                 media_url = None
                 if 'media' in request.files:
                     file = request.files['media']
@@ -489,12 +529,11 @@ def pet_alerts():
                             media_url = url_for('static', filename=result.lstrip('/'))
                         else:
                             flash(f"Warning: {result}", 'warning')
-                
                 new_alert = alerts.add_alert(
                     username=username,
                     pet_type=pet_type,
                     description=description,
-                    location=[float(lat), float(lon)],
+                    location=location_node,  # Pass node id instead of [lat, lon]
                     category=category,
                     priority=priority,
                     media_url=media_url,
@@ -511,15 +550,10 @@ def pet_alerts():
         elif action == 'verify':
             alert_id = int(request.form.get('alert_id'))
             if alerts.verify_alert(alert_id, username):
-                flash('Alert verified!', 'success')
-            
-        elif action == 'respond':
-            alert_id = int(request.form.get('alert_id'))
-            response_text = request.form.get('response')
-            contact_info = request.form.get('contact_info')
-            
-            if alerts.add_response(alert_id, username, response_text, contact_info):
-                flash('Response added successfully!', 'success')
+                contact_info = request.form.get('contact_info')
+                response_text = request.form.get('response_text')
+                if alerts.add_response(alert_id, username, response_text, contact_info):
+                    flash('Response added successfully!', 'success')
             
         elif action == 'subscribe':
             alert_id = int(request.form.get('alert_id'))
@@ -599,7 +633,8 @@ def pet_alerts():
         notifications=notifications,
         unread_count=len(unread_notifications),
         statistics=statistics,
-        search_query=search_query
+        search_query=search_query,
+        graph_nodes=graph_nodes  # <-- Add this line
     )
 
 @app.route('/alerts/api/notifications', methods=['GET'])

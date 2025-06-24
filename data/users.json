@@ -13,5 +13,10 @@
     "password_hash": "scrypt:32768:8:1$FHyVWijn84A1E78d$f08f3a714228a0c76ab11a2988954b5d8f6c880845a98dad684724421c73d442db78979f026c1adf4ba676fbfa0d24f6cb6529fef68e929906b77a300d0d4966",
     "email": "tasdik@gmail.com",
     "created_at": "2025-05-28T08:07:13.173737"
+  },
+  "sifat": {
+    "password_hash": "scrypt:32768:8:1$zOQWWEvNFHPkFZdX$0f96f112cc56ca13c1f58526b184df102fff0d8530800f9767f000d4be79e914ea79b7e7159ef2babd94eff426127355af5f8e62c3e83a79b0bb8a12d070e91b",
+    "email": "a@m.com",
+    "created_at": "2025-06-24T19:33:31.946915"
   }
 }

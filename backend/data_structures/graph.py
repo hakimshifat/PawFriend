@@ -1,5 +1,4 @@
 import heapq
-import math
 
 class Graph:
     
@@ -34,38 +33,11 @@ class Graph:
             return self.vertices[vertex_id]['edges']
         return {}
     
-    def calculate_distance(self, point1, point2):
-        
-        R = 6371.0
-        
-        lat1, lon1 = point1
-        lat2, lon2 = point2
-        
-        
-        lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
-        
-        
-        dlon = lon2 - lon1
-        dlat = lat2 - lat1
-        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-        c = 2 * math.asin(math.sqrt(a))
-        distance = R * c
-        
-        return distance
-    
     def build_clinic_graph(self, clinics):
         
         for clinic_id, clinic_data in clinics.items():
             self.add_vertex(clinic_id, clinic_data)
         
-        
-        for id1 in clinics:
-            for id2 in clinics:
-                if id1 != id2:
-                    loc1 = clinics[id1]['location']
-                    loc2 = clinics[id2]['location']
-                    distance = self.calculate_distance(loc1, loc2)
-                    self.add_edge(id1, id2, distance)
         
         return self
     

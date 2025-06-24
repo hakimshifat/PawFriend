@@ -3,9 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
     
-    // Auto-dismiss alerts after 5 seconds
+    // Auto-dismiss only alerts with .alert-dismissible after 5 seconds
     setTimeout(function() {
-        const alerts = document.querySelectorAll('.alert');
+        const alerts = document.querySelectorAll('.alert-dismissible');
         alerts.forEach(alert => {
             const bsAlert = new bootstrap.Alert(alert);
             bsAlert.close();
