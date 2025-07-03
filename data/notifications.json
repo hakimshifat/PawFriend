@@ -7,6 +7,24 @@
       "type": "NEW_RESPONSE",
       "timestamp": "2025-05-28 08:07",
       "read": false
+    },
+    {
+      "id": 2,
+      "alert_id": 1,
+      "message": "New response from sifat: I also saw the cat, Beside Vista Cafe...",
+      "type": "NEW_RESPONSE",
+      "timestamp": "2025-06-25 09:41",
+      "read": false
+    }
+  ],
+  "Shahed": [
+    {
+      "id": 1,
+      "alert_id": 2,
+      "message": "New response from Ziden: ...",
+      "type": "NEW_RESPONSE",
+      "timestamp": "2025-07-02 12:23",
+      "read": false
     }
   ]
 }

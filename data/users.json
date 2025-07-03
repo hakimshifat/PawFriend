@@ -18,5 +18,20 @@
     "password_hash": "scrypt:32768:8:1$zOQWWEvNFHPkFZdX$0f96f112cc56ca13c1f58526b184df102fff0d8530800f9767f000d4be79e914ea79b7e7159ef2babd94eff426127355af5f8e62c3e83a79b0bb8a12d070e91b",
     "email": "a@m.com",
     "created_at": "2025-06-24T19:33:31.946915"
+  },
+  "Shahed": {
+    "password_hash": "scrypt:32768:8:1$8HuWAE1VCDq1Efum$5a102c232449a9fc836033ee2e609340ae48f983985ea108f8f68e13f802014a26eacc94030dcdebea85ac02c723a885c94cb3c5296523ee06ffb283e6d937f8",
+    "email": "shahed@gmail.com",
+    "created_at": "2025-07-01T21:27:56.733907"
+  },
+  "Ziden": {
+    "password_hash": "scrypt:32768:8:1$aadqR02Z6EXCSi67$6e2f36228c349feed94b1c30d629b39c21fd1148a8694afc04cdae7f5fde206162b58f153745fdf6a1d5a9f29bbd593db33cdae646c310445641afdf1c063d46",
+    "email": "ziden@gmail.com",
+    "created_at": "2025-07-02T12:17:15.910848"
+  },
+  "Tashfins Friend": {
+    "password_hash": "scrypt:32768:8:1$uZZnM9e3d4o12Cz0$0319d819f5f11bc28b9fa46e42cb1060c2470bf90d4a68cc5aa91c3b76614afcfcc92741582557ae01348f61114167c67fe07f774d59a0eedb13e94ccbfbd46a",
+    "email": "tashfin12@gmail.com",
+    "created_at": "2025-07-02T12:26:48.080643"
   }
 }

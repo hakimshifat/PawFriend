@@ -12,5 +12,59 @@
       ],
       "id": "66d0f515-a8a0-4aba-900c-2e4137e791d2"
     }
+  ],
+  "sifat": [
+    {
+      "name": "Puchi",
+      "species": "Cat",
+      "breed": "N/A",
+      "age": 1.2,
+      "weight": 1.3,
+      "medical_history": "",
+      "vaccinations": [],
+      "id": "ec10dbb1-3a73-4f3b-ab15-886e5a475545",
+      "photo": "uploads/pets/ec10dbb1-3a73-4f3b-ab15-886e5a475545.png"
+    }
+  ],
+  "Shahed": [
+    {
+      "name": "Mikki",
+      "species": "Cat",
+      "breed": "Deshi",
+      "age": 2.3,
+      "weight": 1.4,
+      "medical_history": "Vaccinated",
+      "vaccinations": [],
+      "id": "4f63e2c0-2dca-45e0-9426-59c2dce6a71f",
+      "photo": "uploads/pets/4f63e2c0-2dca-45e0-9426-59c2dce6a71f.jpg"
+    }
+  ],
+  "Ziden": [
+    {
+      "name": "Golu",
+      "species": "Cat",
+      "breed": "Local",
+      "age": 1.0,
+      "weight": 4.4,
+      "medical_history": "",
+      "vaccinations": [
+        "Rabies Flue"
+      ],
+      "id": "beea2c3b-1e6c-4a4c-b152-3f7ad73b8c83",
+      "photo": "uploads/pets/beea2c3b-1e6c-4a4c-b152-3f7ad73b8c83.jpeg"
+    }
+  ],
+  "Tashfins Friend": [
+    {
+      "name": "Beppy",
+      "species": "Cat",
+      "breed": "Cat",
+      "age": 2.2,
+      "weight": 3.4,
+      "medical_history": "",
+      "vaccinations": [],
+      "id": "7de79422-1fb9-4f5d-b56a-9d9ea9ac3e2c",
+      "photo": "uploads/pets/7de79422-1fb9-4f5d-b56a-9d9ea9ac3e2c.jpeg"
+    }
   ]
 }

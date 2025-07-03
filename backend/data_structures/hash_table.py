@@ -16,13 +16,10 @@ class HashTable:
             
             return key % self.size
         else:
-            
             return self._hash(str(key))
     
     def insert(self, key, value):
         index = self._hash(key)
-        
-        
         for i, (k, v) in enumerate(self.table[index]):
             if k == key:
                 self.table[index][i] = (key, value)

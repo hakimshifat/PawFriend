@@ -44,51 +44,30 @@ class Graph:
     def dijkstra_shortest_path(self, start_vertex, end_vertex):
         if start_vertex not in self.vertices or end_vertex not in self.vertices:
             return float('infinity'), []
-        
-        
         distances = {vertex: float('infinity') for vertex in self.vertices}
         distances[start_vertex] = 0
-        
-        
         previous = {vertex: None for vertex in self.vertices}
-        
-        
         pq = [(0, start_vertex)]
-        
         while pq:
             current_distance, current_vertex = heapq.heappop(pq)
-            
-            
             if current_vertex == end_vertex:
                 break
-                
-            
             if current_distance > distances[current_vertex]:
                 continue
-                
-            
             for neighbor, weight in self.vertices[current_vertex]['edges'].items():
                 distance = current_distance + weight
-                
-                
                 if distance < distances[neighbor]:
                     distances[neighbor] = distance
                     previous[neighbor] = current_vertex
                     heapq.heappush(pq, (distance, neighbor))
-        
-        
         path = []
         current = end_vertex
         
         while current:
             path.append(current)
             current = previous[current]
-            
-        
         path.reverse()
-        
         return distances[end_vertex], path
-    
     def find_nearest_vertex(self, location, condition=None):
         nearest_vertex = None
         min_distance = float('infinity')

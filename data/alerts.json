@@ -20,17 +20,62 @@
         "text": "I saw the cat, near third place. some bba guys were petting him",
         "timestamp": "2025-05-28 08:07",
         "contact_info": ""
+      },
+      {
+        "username": "sifat",
+        "text": null,
+        "timestamp": "2025-06-25 07:38",
+        "contact_info": null
+      },
+      {
+        "username": "sifat",
+        "text": "I also saw the cat, Beside Vista Cafe",
+        "timestamp": "2025-06-25 09:41",
+        "contact_info": ""
       }
     ],
     "subscribers": [
-      "Tashfin"
+      "Tashfin",
+      "sifat"
+    ],
+    "verification_count": 2,
+    "tags": [
+      "lost"
+    ],
+    "verifiers": [
+      "Tasdik",
+      "sifat"
+    ]
+  },
+  {
+    "id": 2,
+    "username": "Shahed",
+    "pet_type": "Cat",
+    "description": "Lost Cat at Mirpur DOHS",
+    "location": "4",
+    "category": "LOST_PET",
+    "priority": 1,
+    "status": "ACTIVE",
+    "media_url": "/static/uploads/alerts/2025/07/20250701_213248_odowkdi.jpg",
+    "created_at": "2025-07-01T21:32:48.867386",
+    "expires_at": "2025-07-31T21:32:48.867309",
+    "responses": [
+      {
+        "username": "Ziden",
+        "text": "",
+        "timestamp": "2025-07-02 12:23",
+        "contact_info": null
+      }
+    ],
+    "subscribers": [
+      "Shahed"
     ],
     "verification_count": 1,
     "tags": [
       "lost"
     ],
     "verifiers": [
-      "Tasdik"
+      "Ziden"
     ]
   }
 ]

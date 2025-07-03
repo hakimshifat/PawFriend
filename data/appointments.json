@@ -27,5 +27,28 @@
       "priority": 3,
       "id": "d372e2ea-b279-4cec-80a9-3b2f0b2b203d"
     }
+  ],
+  "sifat": [
+    {
+      "pet_id": "ec10dbb1-3a73-4f3b-ab15-886e5a475545",
+      "vet_id": "vet2",
+      "date": "2025-06-26",
+      "slot": "11:00-12:00",
+      "reason": "Regular",
+      "priority": 3,
+      "id": "cbc29a8a-14e1-4035-bd1c-3165c984a6e2"
+    }
+  ],
+  "Ziden": [
+    {
+      "pet_id": "beea2c3b-1e6c-4a4c-b152-3f7ad73b8c83",
+      "vet_id": "vet7",
+      "date": "2025-07-02",
+      "slot": "09:00-10:00",
+      "reason": "Leg Injury",
+      "priority": 1,
+      "id": "77d33ddc-39a1-491e-9ace-757587753556",
+      "urgent_photo": "uploads/appointments/77d33ddc-39a1-491e-9ace-757587753556.jpeg"
+    }
   ]
 }

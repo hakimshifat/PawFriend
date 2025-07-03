@@ -225,6 +225,8 @@ def add_response(alert_id: int, username: str, response_text: str, contact_info:
     alerts = load_alerts()
     for alert in alerts:
         if alert["id"] == alert_id:
+            if response_text is None:
+                response_text = ""
             response = {
                 "username": username,
                 "text": response_text,
